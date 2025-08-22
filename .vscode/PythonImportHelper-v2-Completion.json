@@ -1,0 +1,395 @@
+[
+    {
+        "label": "paramiko",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "paramiko",
+        "description": "paramiko",
+        "detail": "paramiko",
+        "documentation": {}
+    },
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "subprocess",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "subprocess",
+        "description": "subprocess",
+        "detail": "subprocess",
+        "documentation": {}
+    },
+    {
+        "label": "S_ISDIR",
+        "importPath": "stat",
+        "description": "stat",
+        "isExtraImport": true,
+        "detail": "stat",
+        "documentation": {}
+    },
+    {
+        "label": "S_ISDIR",
+        "importPath": "stat",
+        "description": "stat",
+        "isExtraImport": true,
+        "detail": "stat",
+        "documentation": {}
+    },
+    {
+        "label": "ST_MTIME",
+        "importPath": "stat",
+        "description": "stat",
+        "isExtraImport": true,
+        "detail": "stat",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "run_command",
+        "kind": 2,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "def run_command(command, cwd=None):\n    \"\"\"Run a shell command and check if it was successful. If not, stop the script.\"\"\"\n    try:\n        result = subprocess.run(command, shell=True, cwd=cwd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        print(f\"Command '{command}' executed successfully.\")\n        print(\"Output:\", result.stdout.decode())\n        return result\n    except subprocess.CalledProcessError as e:\n        print(f\"Error executing command '{command}': {e.stderr.decode()}\")\n        exit(1)  # Stop the script if any command fails",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "setup_local_environment",
+        "kind": 2,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "def setup_local_environment(config):\n    \"\"\"Run Git and NPM setup commands.\"\"\"\n    print(f\"Navigating to the working directory: {config['working_directory']}...\")\n    # Git checkout to the branch specified in the config\n    print(f\"Checking out to '{config['git_branch']}' branch...\")\n    run_command(f\"git checkout {config['git_branch']}\", cwd=config['working_directory'])\n    # Git pull with rebase\n    print(\"Pulling latest changes with rebase...\")\n    run_command(\"git pull --rebase\", cwd=config['working_directory'])\n    # Build Angular frontend using the command from the config",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "connect_sftp",
+        "kind": 2,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "def connect_sftp(config):\n    \"\"\"Establish an SFTP connection.\"\"\"\n    try:\n        transport = paramiko.Transport((hostname, port))\n        transport.connect(username=username, password=password)\n        sftp = paramiko.SFTPClient.from_transport(transport)\n        return sftp\n    except Exception as e:\n        print(f\"Error connecting to SFTP server: {e}\")\n        exit(1)",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "backup_remote_folders",
+        "kind": 2,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "def backup_remote_folders(sftp, config):\n    \"\"\"Backup the remote folder, excluding specified directories.\"\"\"\n    try:\n        timestamp = time.strftime(\"%Y%m%d\")  # Backup folder name based on date\n        local_backup_root = os.path.join(config['backup_directory'], timestamp)\n        # Ensure unique backup folder name\n        folder_name = local_backup_root\n        counter = 1\n        while os.path.exists(folder_name):\n            folder_name = f\"{local_backup_root}_{counter}\"",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "copy_folder_contents_from_sftp",
+        "kind": 2,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "def copy_folder_contents_from_sftp(sftp, remote_folder_path, local_folder_path, exclude_dirs):\n    \"\"\"Recursively copy all contents from the remote folder to the local backup folder.\"\"\"\n    try:\n        for item in sftp.listdir_attr(remote_folder_path):\n            remote_item_path = remote_folder_path + '/' + item.filename\n            local_item_path = os.path.join(local_folder_path, item.filename)\n            # If it's a directory and should be excluded, skip it\n            if S_ISDIR(item.st_mode):\n                if item.filename in exclude_dirs:\n                    print(f\"Skipping directory: {remote_item_path} (excluded)\")",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "delete_files",
+        "kind": 2,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "def delete_files(sftp, remote_path):\n    \"\"\"Delete all files in the given remote directory (excluding directories).\"\"\"\n    try:\n        for file_attr in sftp.listdir_attr(remote_path):\n            remote_file_path = remote_path + '/' + file_attr.filename\n            if not S_ISDIR(file_attr.st_mode):\n                print(f\"Deleting file: {remote_file_path}\")\n                sftp.remove(remote_file_path)\n    except Exception as e:\n        print(f\"Error deleting files: {e}\")",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "copy_local_files",
+        "kind": 2,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "def copy_local_files(sftp, local_path, remote_path):\n    \"\"\"Copy all files from the local directory to the remote directory.\"\"\"\n    try:\n        for filename in os.listdir(local_path):\n            local_file_path = os.path.join(local_path, filename)\n            if os.path.isfile(local_file_path):\n                remote_file_path = os.path.join(remote_path, filename).replace(os.sep, '/')\n                print(f\"Copying file: {local_file_path} to {remote_file_path}\")\n                sftp.put(local_file_path, remote_file_path)\n                local_mtime = os.path.getmtime(local_file_path)",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "def main():\n    # Loop through the config options and print them dynamically\n    print(\"Select the project to deploy:\")\n    for key, (name, _) in configs.items():\n        print(f\"{key} - {name}\")\n    choice = input(\"Enter your choice: \")\n    # Check if the selected choice is valid\n    if choice in configs:\n        project_name, config = configs[choice]\n        print(f\"You have selected the '{project_name}' client for deployment.\")",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "hostname",
+        "kind": 5,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "hostname = '10.111.202.145'\nport = 22\nusername = 'root'\npassword = 'root12'\n# Configuration for fx_portal\nfx_customer_config = {\n    'remote_directory':     '/opt/9075_nginx_fxportalcustomer',\n    'working_directory':    r'D:\\JSProjects\\fxPortal\\fx-portal-customer',\n    'local_directory':      r'D:\\JSProjects\\fxPortal\\fx-portal-customer\\dist',\n    'backup_directory':     r'D:\\JSProjects\\fxPortal\\backup\\winscp_backup_customer',",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "port",
+        "kind": 5,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "port = 22\nusername = 'root'\npassword = 'root12'\n# Configuration for fx_portal\nfx_customer_config = {\n    'remote_directory':     '/opt/9075_nginx_fxportalcustomer',\n    'working_directory':    r'D:\\JSProjects\\fxPortal\\fx-portal-customer',\n    'local_directory':      r'D:\\JSProjects\\fxPortal\\fx-portal-customer\\dist',\n    'backup_directory':     r'D:\\JSProjects\\fxPortal\\backup\\winscp_backup_customer',\n    'exclude_dirs':         ['assets'],",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "username",
+        "kind": 5,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "username = 'root'\npassword = 'root12'\n# Configuration for fx_portal\nfx_customer_config = {\n    'remote_directory':     '/opt/9075_nginx_fxportalcustomer',\n    'working_directory':    r'D:\\JSProjects\\fxPortal\\fx-portal-customer',\n    'local_directory':      r'D:\\JSProjects\\fxPortal\\fx-portal-customer\\dist',\n    'backup_directory':     r'D:\\JSProjects\\fxPortal\\backup\\winscp_backup_customer',\n    'exclude_dirs':         ['assets'],\n    'git_branch':           'staging',",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "password",
+        "kind": 5,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "password = 'root12'\n# Configuration for fx_portal\nfx_customer_config = {\n    'remote_directory':     '/opt/9075_nginx_fxportalcustomer',\n    'working_directory':    r'D:\\JSProjects\\fxPortal\\fx-portal-customer',\n    'local_directory':      r'D:\\JSProjects\\fxPortal\\fx-portal-customer\\dist',\n    'backup_directory':     r'D:\\JSProjects\\fxPortal\\backup\\winscp_backup_customer',\n    'exclude_dirs':         ['assets'],\n    'git_branch':           'staging',\n    'ng_build_cmd':         'npm run build:stage'",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "fx_customer_config",
+        "kind": 5,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "fx_customer_config = {\n    'remote_directory':     '/opt/9075_nginx_fxportalcustomer',\n    'working_directory':    r'D:\\JSProjects\\fxPortal\\fx-portal-customer',\n    'local_directory':      r'D:\\JSProjects\\fxPortal\\fx-portal-customer\\dist',\n    'backup_directory':     r'D:\\JSProjects\\fxPortal\\backup\\winscp_backup_customer',\n    'exclude_dirs':         ['assets'],\n    'git_branch':           'staging',\n    'ng_build_cmd':         'npm run build:stage'\n}\n# Configuration for fx_portal",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "fx_client_config",
+        "kind": 5,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "fx_client_config = {\n    'remote_directory':     '/opt/9076_nginx_fxportalbackofice',\n    'working_directory':    r'D:\\JSProjects\\fxPortal\\fx-portal-client',\n    'local_directory':      r'D:\\JSProjects\\fxPortal\\fx-portal-client\\dist',\n    'backup_directory':     r'D:\\JSProjects\\fxPortal\\backup\\winscp_backup_client',\n    'exclude_dirs':         ['assets'],\n    'git_branch':           'staging',\n    'ng_build_cmd':         'npm run build:stage'\n}\n# Configuration for fx_portal",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "bulk_client_config",
+        "kind": 5,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "bulk_client_config = {\n    'remote_directory':     '/opt/9005_nginx_bao',\n    'working_directory':    r'D:\\JSProjects\\bulk-account-opening-server-uat',\n    'local_directory':      r'D:\\JSProjects\\bulk-account-opening-server-uat\\dist',\n    'backup_directory':     r'D:\\JSProjects\\bulk\\backup\\bulk_client_backup',\n    'exclude_dirs':         ['assets'],\n    'git_branch':           'staging',\n    'ng_build_cmd':         'npm run build:stage'\n}\n# Configuration for fx_portal",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "home_remittance_client_config",
+        "kind": 5,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "home_remittance_client_config = {\n    'remote_directory':     '/opt/7013_nginx_homeremittance',\n    'working_directory':    r'D:\\JSProjects\\home-remittance-client',\n    'local_directory':      r'D:\\JSProjects\\home-remittance-client\\dist',\n    'backup_directory':     r'D:\\JSProjects\\HomeRemiitance\\backup\\winscp_backup_client',\n    'exclude_dirs':         ['assets'],\n    'git_branch':           'main',\n    'ng_build_cmd':         'npm run build:stage'\n}\n# Group configurations into an array",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "configs",
+        "kind": 5,
+        "importPath": "client_stage_deploye",
+        "description": "client_stage_deploye",
+        "peekOfCode": "configs = {\n    '1': ('FX_Portal_customer', fx_customer_config),\n    '2': ('FX_Portal_client', fx_client_config),\n    '3': ('BULK_client', bulk_client_config),\n    '4': ('home_remittance_client_config', home_remittance_client_config),\n}\ndef run_command(command, cwd=None):\n    \"\"\"Run a shell command and check if it was successful. If not, stop the script.\"\"\"\n    try:\n        result = subprocess.run(command, shell=True, cwd=cwd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)",
+        "detail": "client_stage_deploye",
+        "documentation": {}
+    },
+    {
+        "label": "run_command",
+        "kind": 2,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "def run_command(command, cwd=None):\n    \"\"\"Run a shell command and check if it was successful. If not, stop the script.\"\"\"\n    try:\n        result = subprocess.run(command, shell=True, cwd=cwd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        print(f\"Command '{command}' executed successfully.\")\n        print(\"Output:\", result.stdout.decode())\n        return result\n    except subprocess.CalledProcessError as e:\n        print(f\"Error executing command '{command}': {e.stderr.decode()}\")\n        exit(1)",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "setup_local_environment",
+        "kind": 2,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "def setup_local_environment(config):\n    \"\"\"Run Git and NPM setup commands.\"\"\"\n    print(f\"Navigating to the working directory: {config['local_directory']}...\")\n    # Git checkout\n    print(f\"Checking out to '{config['git_branch']}' branch...\")\n    run_command(f\"git checkout {config['git_branch']}\", cwd=config['local_directory'])\n    # Git pull with rebase\n    print(\"Pulling latest changes with rebase...\")\n    run_command(\"git pull --rebase\", cwd=config['local_directory'])\ndef connect_sftp():",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "connect_sftp",
+        "kind": 2,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "def connect_sftp():\n    try:\n        transport = paramiko.Transport((hostname, port))\n        transport.connect(username=username, password=password)\n        sftp = paramiko.SFTPClient.from_transport(transport)\n        return sftp\n    except Exception as e:\n        print(f\"Error connecting to SFTP server: {e}\")\n        return None\ndef backup_remote_folders(sftp, remote_path, backup_directory, exclude_dirs=None):",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "backup_remote_folders",
+        "kind": 2,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "def backup_remote_folders(sftp, remote_path, backup_directory, exclude_dirs=None):\n    try:\n        exclude_dirs = exclude_dirs or []\n        timestamp = time.strftime(\"%Y%m%d\")\n        local_backup_root = os.path.join(backup_directory, timestamp)\n        folder_name = local_backup_root\n        counter = 1\n        while os.path.exists(folder_name):\n            folder_name = f\"{local_backup_root}_{counter}\"\n            counter += 1",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "copy_folder_contents_from_sftp",
+        "kind": 2,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "def copy_folder_contents_from_sftp(sftp, remote_folder_path, local_folder_path, exclude_dirs):\n    try:\n        for item in sftp.listdir_attr(remote_folder_path):\n            remote_item_path = remote_folder_path + '/' + item.filename\n            local_item_path = os.path.join(local_folder_path, item.filename)\n            remote_item_path = remote_item_path.replace(os.sep, '/')\n            local_item_path = local_item_path.replace(os.sep, '/')\n            if S_ISDIR(item.st_mode):\n                if item.filename in exclude_dirs:\n                    print(f\"Skipping directory: {remote_item_path} (excluded)\")",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "delete_remote_folders",
+        "kind": 2,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "def delete_remote_folders(sftp, remote_path, folders_to_copy):\n    try:\n        for folder in sftp.listdir_attr(remote_path):\n            remote_folder_path = remote_path + '/' + folder.filename\n            if S_ISDIR(folder.st_mode):\n                if folder.filename in folders_to_copy:\n                    print(f\"Deleting folder: {remote_folder_path}\")\n                    delete_folder_contents(sftp, remote_folder_path)\n                    sftp.rmdir(remote_folder_path)\n    except Exception as e:",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "delete_folder_contents",
+        "kind": 2,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "def delete_folder_contents(sftp, remote_folder_path):\n    try:\n        for file_attr in sftp.listdir_attr(remote_folder_path):\n            remote_file_path = remote_folder_path + '/' + file_attr.filename\n            if S_ISDIR(file_attr.st_mode):\n                delete_folder_contents(sftp, remote_file_path)\n                sftp.rmdir(remote_file_path)\n            else:\n                print(f\"Deleting file: {remote_file_path}\")\n                sftp.remove(remote_file_path)",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "create_remote_directory",
+        "kind": 2,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "def create_remote_directory(sftp, remote_folder_path):\n    dirs = remote_folder_path.split('/')\n    path = \"\"\n    for dir in dirs:\n        path += dir + \"/\"\n        try:\n            sftp.stat(path)\n        except FileNotFoundError:\n            try:\n                sftp.mkdir(path)",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "copy_local_folders",
+        "kind": 2,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "def copy_local_folders(sftp, local_path, remote_path, folders_to_copy):\n    try:\n        for folder_name in folders_to_copy:\n            local_folder_path = os.path.join(local_path, folder_name)\n            if os.path.isdir(local_folder_path):\n                remote_folder_path = os.path.join(remote_path, folder_name).replace(os.sep, '/')\n                create_remote_directory(sftp, remote_folder_path)\n                copy_folder_contents(local_folder_path, sftp, remote_folder_path)\n    except Exception as e:\n        print(f\"Error copying folders: {e}\")",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "copy_folder_contents",
+        "kind": 2,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "def copy_folder_contents(local_folder_path, sftp, remote_folder_path):\n    try:\n        for item in os.listdir(local_folder_path):\n            local_item_path = os.path.join(local_folder_path, item)\n            remote_item_path = os.path.join(remote_folder_path, item).replace(os.sep, '/')\n            if os.path.isdir(local_item_path):\n                print(f\"Copying directory: {local_item_path} to {remote_item_path}\")\n                create_remote_directory(sftp, remote_item_path)\n                copy_folder_contents(local_item_path, sftp, remote_item_path)\n            else:",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "run_docker_restart_command",
+        "kind": 2,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "def run_docker_restart_command(container, follow_lines):\n    try:\n        ssh = paramiko.SSHClient()\n        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())\n        ssh.connect(hostname, username=username, password=password)\n        stdin, stdout, stderr = ssh.exec_command(f\"docker restart {container}\")\n        print(\"Docker restart command executed. Output:\")\n        print(stdout.read().decode())\n        print(\"Errors (if any):\")\n        print(stderr.read().decode())",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "def main():\n    # Loop through the config options and print them dynamically\n    print(\"Select the project to deploy:\")\n    for key, (name, _) in configs.items():\n        print(f\"{key} - {name}\")\n    choice = input(\"Enter your choice: \")\n    # Early return if the selected choice is invalid\n    if choice not in configs:\n        print(\"Invalid selection. Exiting.\")\n        return  # Early return",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "hostname",
+        "kind": 5,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "hostname = '10.111.202.145' \nport = 22\nusername = 'root'\npassword = 'root12' \n# Configuration Groups\nfx_portal_server = {\n    'container': '9077_node_fxportal',\n    'remote_directory': '/opt/9077_node_fxportal',\n    'local_directory': r'D:\\JSProjects\\fxPortal\\fx-portal-server',\n    'folders_to_copy': ['routes'],",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "port",
+        "kind": 5,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "port = 22\nusername = 'root'\npassword = 'root12' \n# Configuration Groups\nfx_portal_server = {\n    'container': '9077_node_fxportal',\n    'remote_directory': '/opt/9077_node_fxportal',\n    'local_directory': r'D:\\JSProjects\\fxPortal\\fx-portal-server',\n    'folders_to_copy': ['routes'],\n     # 'folders_to_copy': ['routes', 'util', 'functions'],",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "username",
+        "kind": 5,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "username = 'root'\npassword = 'root12' \n# Configuration Groups\nfx_portal_server = {\n    'container': '9077_node_fxportal',\n    'remote_directory': '/opt/9077_node_fxportal',\n    'local_directory': r'D:\\JSProjects\\fxPortal\\fx-portal-server',\n    'folders_to_copy': ['routes'],\n     # 'folders_to_copy': ['routes', 'util', 'functions'],\n    'follow_lines': 22,",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "password",
+        "kind": 5,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "password = 'root12' \n# Configuration Groups\nfx_portal_server = {\n    'container': '9077_node_fxportal',\n    'remote_directory': '/opt/9077_node_fxportal',\n    'local_directory': r'D:\\JSProjects\\fxPortal\\fx-portal-server',\n    'folders_to_copy': ['routes'],\n     # 'folders_to_copy': ['routes', 'util', 'functions'],\n    'follow_lines': 22,\n    'backup_directory': r'D:\\JSProjects\\fxPortal\\backup\\winscp_backup_server',",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "fx_portal_server",
+        "kind": 5,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "fx_portal_server = {\n    'container': '9077_node_fxportal',\n    'remote_directory': '/opt/9077_node_fxportal',\n    'local_directory': r'D:\\JSProjects\\fxPortal\\fx-portal-server',\n    'folders_to_copy': ['routes'],\n     # 'folders_to_copy': ['routes', 'util', 'functions'],\n    'follow_lines': 22,\n    'backup_directory': r'D:\\JSProjects\\fxPortal\\backup\\winscp_backup_server',\n    'exclude_dirs': ['node_modules', 'node_modules_old','uploads_trackingId', 'uploads', 'logs'],\n    'git_branch': 'staging',",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "bulk_server",
+        "kind": 5,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "bulk_server = {\n    'container': 'java-9006_node_bao-bkp',\n    'remote_directory': '/opt/java-9006_node_bao-bkp',\n    'local_directory': r'D:\\JSProjects\\bulk-account-opening-server',\n    'folders_to_copy': ['routes'],\n     # 'folders_to_copy': ['routes', 'util', 'functions'],\n    'follow_lines': 22,\n    'backup_directory': r'D:\\JSProjects\\bulk\\backup\\bulk_server_backup',\n    'exclude_dirs': ['node_modules', 'node_modules_old','uploads_trackingId', 'uploads', 'logs'],\n    'git_branch': 'staging',",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "home_remitt_server",
+        "kind": 5,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "home_remitt_server = {\n    'container': '7012_nodeapp_homeremittance',\n    'remote_directory': '/opt/7012_nodeapp_homeremittance',\n    'local_directory': r'D:\\JSProjects\\home-remittance-server',\n    'folders_to_copy': ['routes','watch','functions'],\n     # 'folders_to_copy': ['routes', 'util', 'functions'],\n    'follow_lines': 22,\n    'backup_directory': r'D:\\JSProjects\\HomeRemiitance\\backup\\winscp_backup_server',\n    'exclude_dirs': ['node_modules', 'node_modules_old','uploads_trackingId', 'uploads', 'logs'],\n    'git_branch': 'main',",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    },
+    {
+        "label": "configs",
+        "kind": 5,
+        "importPath": "server_stage_deploy",
+        "description": "server_stage_deploy",
+        "peekOfCode": "configs = {\n    '1': ('fx_portal_server', fx_portal_server),\n    '2': ('home_remitt_server', home_remitt_server),\n}\ndef run_command(command, cwd=None):\n    \"\"\"Run a shell command and check if it was successful. If not, stop the script.\"\"\"\n    try:\n        result = subprocess.run(command, shell=True, cwd=cwd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n        print(f\"Command '{command}' executed successfully.\")\n        print(\"Output:\", result.stdout.decode())",
+        "detail": "server_stage_deploy",
+        "documentation": {}
+    }
+]

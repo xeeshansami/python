@@ -24,12 +24,37 @@ fx_portal_server = {
     'git_branch': 'staging',
 }
 
+bulk_server = {
+    'container': 'java-9006_node_bao-bkp',
+    'remote_directory': '/opt/java-9006_node_bao-bkp',
+    'local_directory': r'D:\JSProjects\bulk-account-opening-server',
+    'folders_to_copy': ['routes'],
+     # 'folders_to_copy': ['routes', 'util', 'functions'],
+    'follow_lines': 22,
+    'backup_directory': r'D:\JSProjects\bulk\backup\bulk_server_backup',
+    'exclude_dirs': ['node_modules', 'node_modules_old','uploads_trackingId', 'uploads', 'logs'],
+    'git_branch': 'staging',
+}
+
+home_remitt_server = {
+    'container': '7012_nodeapp_homeremittance',
+    'remote_directory': '/opt/7012_nodeapp_homeremittance',
+    'local_directory': r'D:\JSProjects\home-remittance-server',
+    'folders_to_copy': ['routes','watch','functions'],
+     # 'folders_to_copy': ['routes', 'util', 'functions'],
+    'follow_lines': 22,
+    'backup_directory': r'D:\JSProjects\HomeRemiitance\backup\winscp_backup_server',
+    'exclude_dirs': ['node_modules', 'node_modules_old','uploads_trackingId', 'uploads', 'logs'],
+    'git_branch': 'main',
+}
+
 
 
 
 # Config options dictionary that maps a key to (name, config)
 configs = {
     '1': ('fx_portal_server', fx_portal_server),
+    '2': ('home_remitt_server', home_remitt_server),
     
 }
 

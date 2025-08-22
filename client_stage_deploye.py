@@ -33,10 +33,35 @@ fx_client_config = {
     'ng_build_cmd':         'npm run build:stage'
 }
 
+# Configuration for fx_portal
+bulk_client_config = {
+    'remote_directory':     '/opt/9005_nginx_bao',
+    'working_directory':    r'D:\JSProjects\bulk-account-opening-server-uat',
+    'local_directory':      r'D:\JSProjects\bulk-account-opening-server-uat\dist',
+    'backup_directory':     r'D:\JSProjects\bulk\backup\bulk_client_backup',
+    'exclude_dirs':         ['assets'],
+    'git_branch':           'staging',
+    'ng_build_cmd':         'npm run build:stage'
+}
+
+# Configuration for fx_portal
+home_remittance_client_config = {
+    'remote_directory':     '/opt/7013_nginx_homeremittance',
+    'working_directory':    r'D:\JSProjects\home-remittance-client',
+    'local_directory':      r'D:\JSProjects\home-remittance-client\dist',
+    'backup_directory':     r'D:\JSProjects\HomeRemiitance\backup\winscp_backup_client',
+    'exclude_dirs':         ['assets'],
+    'git_branch':           'main',
+    'ng_build_cmd':         'npm run build:stage'
+}
+
+
 # Group configurations into an array
 configs = {
     '1': ('FX_Portal_customer', fx_customer_config),
     '2': ('FX_Portal_client', fx_client_config),
+    '3': ('BULK_client', bulk_client_config),
+    '4': ('home_remittance_client_config', home_remittance_client_config),
 }
 
 
@@ -108,6 +133,7 @@ def backup_remote_folders(sftp, config):
         copy_folder_contents_from_sftp(sftp, config['remote_directory'], folder_name, config['exclude_dirs'])
 
     except Exception as e:
+        
         print(f"Error during backup: {e}")
         exit(1)
 
