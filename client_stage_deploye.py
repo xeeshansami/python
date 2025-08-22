@@ -58,9 +58,9 @@ home_remittance_client_config = {
 
 # Group configurations into an array
 configs = {
-    '1': ('FX_Portal_customer', fx_customer_config),
-    '2': ('FX_Portal_client', fx_client_config),
-    '3': ('BULK_client', bulk_client_config),
+    '1': ('fx_portal_customer', fx_customer_config),
+    '2': ('fx_portal_client', fx_client_config),
+    '3': ('bulk_client', bulk_client_config),
     '4': ('home_remittance_client_config', home_remittance_client_config),
 }
 

@@ -55,6 +55,7 @@ home_remitt_server = {
 configs = {
     '1': ('fx_portal_server', fx_portal_server),
     '2': ('home_remitt_server', home_remitt_server),
+    '3': ('bulk_server', bulk_server),
     
 }
 
